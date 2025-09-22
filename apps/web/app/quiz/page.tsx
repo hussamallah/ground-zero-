@@ -174,57 +174,42 @@ export default function Quiz(){
   }
 
   return (
-    <div className="min-h-screen" style={{
+    <div style={{
+      width: '100vw',
+      height: '100vh',
       background: 'radial-gradient(1200px 700px at 15% -10%, #121625, #0a0b0f)',
       color: '#f7f3ea',
-      fontFamily: 'Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Arial'
+      fontFamily: 'Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Arial',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
     }}>
-        <div style={{
-          width: '100%',
-          padding: '20px',
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <header style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '14px',
-            marginBottom: '12px'
-          }}>
-            <h1 style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              letterSpacing: '0.2px',
-              color: '#aeb7c7'
-            }}>
-              Ground Zero • Interleaved Bracket (Gold)
-            </h1>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '12px' }}>
-              <Link style={{ textDecoration: 'underline', color: '#f7f3ea' }} href="/">Home</Link>
-              <button style={{ textDecoration: 'underline', color: '#f7f3ea', background: 'none', border: 'none', cursor: 'pointer' }} onClick={restart}>Restart</button>
-        </div>
-      </header>
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        display: 'flex',
+        gap: '12px',
+        fontSize: '12px',
+        zIndex: 10
+      }}>
+        <Link style={{ textDecoration: 'underline', color: '#f7f3ea' }} href="/">Home</Link>
+        <button style={{ textDecoration: 'underline', color: '#f7f3ea', background: 'none', border: 'none', cursor: 'pointer' }} onClick={restart}>Restart</button>
+      </div>
         
-        <div style={{
-          background: 'linear-gradient(180deg, #14161c, #11151c)',
-          border: '1px solid #2a2f3a',
-          borderRadius: '18px',
-          boxShadow: '0 16px 36px rgba(0,0,0,.45)',
-          padding: '22px',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          {state.phase === "P0" && <Phase0 state={state} save={save} />}
-      {state.phase === "P1" && <Phase1 state={state} save={save} />}
-      {state.phase === "P2A" && <Phase2A state={state} save={save} />}
-      {state.phase === "BR_INT" && <BracketInterleaved state={state} save={save} />}
-      {state.phase === "P3" && <Phase3 state={state} save={save} />}
-      {state.phase === "SUM" && <Summary state={state} />}
-        </div>
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '20px',
+        overflow: 'hidden'
+      }}>
+        {state.phase === "P0" && <Phase0 state={state} save={save} />}
+        {state.phase === "P1" && <Phase1 state={state} save={save} />}
+        {state.phase === "P2A" && <Phase2A state={state} save={save} />}
+        {state.phase === "BR_INT" && <BracketInterleaved state={state} save={save} />}
+        {state.phase === "P3" && <Phase3 state={state} save={save} />}
+        {state.phase === "SUM" && <Summary state={state} />}
       </div>
     </div>
   );
@@ -232,14 +217,26 @@ export default function Quiz(){
 
 function Phase0({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#aeb7c7' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px', color: '#f7f3ea' }}>
           Select 3 families to continue
         </h2>
-        <p style={{ fontSize: '12px', color: '#9fb0c6' }}>
+        <p style={{ fontSize: '16px', color: '#aeb7c7', lineHeight: '1.5' }}>
           Choose the three areas that resonate most with you
         </p>
+        <div style={{ 
+          marginTop: '16px', 
+          padding: '8px 16px', 
+          background: 'rgba(212,175,55,0.1)', 
+          borderRadius: '20px', 
+          display: 'inline-block',
+          fontSize: '14px',
+          color: '#d4af37',
+          fontWeight: '600'
+        }}>
+          {state.p0_sel.size}/3 selected
+        </div>
       </div>
       
       <div style={{ 
@@ -256,17 +253,21 @@ function Phase0({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
-                padding: '18px',
-                borderRadius: '16px',
-                border: isSelected ? '1px solid #d4af37' : '1px solid #2a2f3a',
-                background: 'linear-gradient(180deg, #1a1d24, #171a20)',
-                transition: 'transform 0.15s, border 0.15s, background 0.15s',
+                gap: '12px',
+                padding: '20px',
+                borderRadius: '20px',
+                border: isSelected ? '2px solid #d4af37' : '2px solid #3a3f4a',
+                background: isSelected 
+                  ? 'linear-gradient(180deg, #2a2d34, #1f2128)' 
+                  : 'linear-gradient(180deg, #1a1d24, #171a20)',
+                transition: 'all 0.2s ease',
                 cursor: 'pointer',
-                minHeight: '140px',
+                minHeight: '160px',
                 textAlign: 'left',
-                transform: isSelected ? 'translateY(-2px)' : 'none',
-                boxShadow: isSelected ? '0 0 0 2px rgba(212,175,55,.28) inset' : 'none'
+                transform: isSelected ? 'translateY(-4px)' : 'none',
+                boxShadow: isSelected 
+                  ? '0 8px 24px rgba(212,175,55,0.3), 0 0 0 1px rgba(212,175,55,0.2) inset' 
+                  : '0 4px 12px rgba(0,0,0,0.2)'
               }}
               onClick={() => {
                 save(s => {
@@ -279,31 +280,39 @@ function Phase0({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
               }}
             >
               <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
+                width: '48px',
+                height: '48px',
+                borderRadius: '16px',
                 display: 'grid',
                 placeItems: 'center',
-                background: 'rgba(212,175,55,.14)',
+                background: isSelected 
+                  ? 'rgba(212,175,55,0.25)' 
+                  : 'rgba(212,175,55,0.15)',
                 color: '#d4af37',
-                fontSize: '22px',
+                fontSize: '24px',
                 fontWeight: '900',
-                border: '1px solid #6b5620'
+                border: isSelected 
+                  ? '2px solid #d4af37' 
+                  : '1px solid #6b5620',
+                transition: 'all 0.2s ease'
               }}>
                 {data.icon}
               </div>
               <div style={{
                 fontWeight: '900',
-                color: '#d4af37',
-                letterSpacing: '0.2px',
-                fontSize: '16px'
+                color: isSelected ? '#f7f3ea' : '#d4af37',
+                letterSpacing: '0.3px',
+                fontSize: '18px',
+                transition: 'color 0.2s ease'
               }}>
                 {family}
               </div>
               <div style={{
                 fontSize: '14px',
-                color: '#e8d39a',
-                opacity: '0.9'
+                color: isSelected ? '#e8d39a' : '#aeb7c7',
+                opacity: '0.95',
+                lineHeight: '1.4',
+                transition: 'color 0.2s ease'
               }}>
                 {data.desc}
               </div>
@@ -315,19 +324,24 @@ function Phase0({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
       <div style={{ textAlign: 'center' }}>
         <button
           style={{
-            padding: '14px 18px',
-            borderRadius: '999px',
-            border: '1px solid #2a2f3a',
+            padding: '16px 32px',
+            borderRadius: '50px',
+            border: '2px solid transparent',
             background: state.p0_sel.size === 3 
-              ? 'linear-gradient(90deg, #d4af37, #e3c566)' 
-              : '#151922',
-            color: state.p0_sel.size === 3 ? '#1a1208' : '#d7e0ef',
+              ? 'linear-gradient(135deg, #d4af37, #e3c566)' 
+              : 'linear-gradient(135deg, #2a2f3a, #1a1d24)',
+            color: state.p0_sel.size === 3 ? '#1a1208' : '#aeb7c7',
             fontWeight: '900',
+            fontSize: '16px',
             cursor: state.p0_sel.size === 3 ? 'pointer' : 'not-allowed',
-            opacity: state.p0_sel.size === 3 ? 1 : 0.6,
-            transition: 'all 0.15s',
-            minWidth: '320px',
-            textAlign: 'center'
+            opacity: state.p0_sel.size === 3 ? 1 : 0.7,
+            transition: 'all 0.3s ease',
+            minWidth: '280px',
+            textAlign: 'center',
+            boxShadow: state.p0_sel.size === 3 
+              ? '0 6px 20px rgba(212,175,55,0.4)' 
+              : '0 4px 12px rgba(0,0,0,0.2)',
+            transform: state.p0_sel.size === 3 ? 'translateY(-2px)' : 'none'
           }}
           disabled={state.p0_sel.size !== 3}
           onClick={() => {
@@ -355,77 +369,118 @@ function Phase1({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
   const progress = ((state.p1_ix + 1) / 7) * 100;
   
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'auto' }}>
-      <div style={{ fontSize: '12px', color: '#aeb7c7', marginBottom: '16px' }}>
-        Phase 1 • {fam} • {state.p1_ix+1}/7
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '12px 16px',
+        background: 'rgba(212,175,55,0.1)',
+        borderRadius: '12px',
+        border: '1px solid rgba(212,175,55,0.2)'
+      }}>
+        <div style={{ fontSize: '14px', color: '#d4af37', fontWeight: '600' }}>
+          Phase 1 • {fam} • {state.p1_ix+1}/7
+        </div>
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#aeb7c7',
+          background: 'rgba(0,0,0,0.3)',
+          padding: '4px 8px',
+          borderRadius: '6px'
+        }}>
+          {Math.round(((state.p1_ix + 1) / 7) * 100)}%
+        </div>
       </div>
       
-      <div style={{ textAlign: 'center' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '20px', color: '#f7f3ea' }}>{qa.q}</h2>
+      <div style={{ textAlign: 'center', marginTop: '-10px' }}>
+        <h2 style={{ 
+          fontSize: '22px', 
+          fontWeight: '600', 
+          marginBottom: '16px', 
+          color: '#f7f3ea', 
+          lineHeight: '1.4',
+          padding: '0 20px'
+        }}>{qa.q}</h2>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '24px', flex: 1 }}>
-        {["C","O","F"].map(ax => (
-          <div key={ax} style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
-            {qa.options.filter(o=>o.axis===ax).map((o, i) => (
-              <button key={ax+i}
-                style={{
-                  width: '100%',
-                  borderRadius: '16px',
-                  border: '2px solid #3a3f4a',
-                  padding: '18px',
-                  textAlign: 'left',
-                  background: 'linear-gradient(180deg, #1a1d24, #171a20)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  boxShadow: '0 2px 8px rgba(0,0,0,.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#d4af37';
-                  e.currentTarget.style.background = 'linear-gradient(180deg, #2a2d34, #272a30)';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(212,175,55,.2)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#3a3f4a';
-                  e.currentTarget.style.background = 'linear-gradient(180deg, #1a1d24, #171a20)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.3)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-                onClick={()=>{
-                  save(s=>{
-                    s.axisP1[fam]=o.axis;
-                    s.faceWinners[fam]=`${fam}/${o.face}`;
-                    if (s.p1_ix<6){ s.p1_ix++; }
-                    else {
-                      s.bracket = seedBracket(s.faceWinners, s.axisP1);
-                      s.phase="P2A";
-                      s.p2a_ix=0;
-                      s.brStep=0;
-                    }
-                  });
-                }}
-              >
-                <div style={{ fontSize: '14px', color: '#d7e0ef', lineHeight: '1.4' }}>
-                {o.text}
-                </div>
-              </button>
-            ))}
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                display: 'inline-block',
-                padding: '8px 16px',
-                borderRadius: '999px',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                background: 'rgba(212,175,55,.2)',
-                color: '#d4af37',
-                border: '1px solid rgba(212,175,55,.3)'
-              }}>
-                {ax === "C" ? "Commit cleanly" : ax === "O" ? "Keep options open" : "Pattern break"}
-              </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(3, minmax(0, 1fr))', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
+        {qa.options.sort((a, b) => {
+          // Group by axis: C, O, F
+          const order = { 'C': 0, 'O': 1, 'F': 2 };
+          return order[a.axis] - order[b.axis];
+        }).map((o, i) => (
+          <button key={i}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '16px',
+              border: '2px solid #3a3f4a',
+              padding: '20px',
+              textAlign: 'left',
+              background: 'linear-gradient(180deg, #1a1d24, #171a20)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              position: 'relative',
+              overflow: 'hidden',
+              minHeight: '120px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#d4af37';
+              e.currentTarget.style.background = 'linear-gradient(180deg, #2a2d34, #272a30)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(212,175,55,0.3)';
+              e.currentTarget.style.transform = 'translateY(-3px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#3a3f4a';
+              e.currentTarget.style.background = 'linear-gradient(180deg, #1a1d24, #171a20)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            onClick={()=>{
+              save(s=>{
+                s.axisP1[fam]=o.axis;
+                s.faceWinners[fam]=`${fam}/${o.face}`;
+                if (s.p1_ix<6){ s.p1_ix++; }
+                else {
+                  s.bracket = seedBracket(s.faceWinners, s.axisP1);
+                  s.phase="P2A";
+                  s.p2a_ix=0;
+                  s.brStep=0;
+                }
+              });
+            }}
+          >
+            <div style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
+              color: '#d4af37',
+              border: '1px solid rgba(212,175,55,0.4)',
+              textAlign: 'center',
+              letterSpacing: '0.5px',
+              boxShadow: '0 2px 8px rgba(212,175,55,0.1)',
+              alignSelf: 'flex-start'
+            }}>
+              {o.axis === "C" ? "Commit cleanly" : o.axis === "O" ? "Keep options open" : "Pattern break"}
             </div>
-          </div>
+            <div style={{ 
+              fontSize: '14px', 
+              color: '#f7f3ea', 
+              lineHeight: '1.4', 
+              flex: 1,
+              fontWeight: '500'
+            }}>
+              {o.text}
+            </div>
+          </button>
         ))}
       </div>
     </div>
@@ -444,27 +499,44 @@ function Phase2A({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
   const progress = ((state.p2a_ix + 1) / 7) * 100;
   
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'auto' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#aeb7c7' }}>
-          <span>Phase 2A • {fam} • {state.p2a_ix+1}/7</span>
-          <span>{Math.round(progress)}%</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'hidden' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '12px 16px',
+        background: 'rgba(212,175,55,0.1)',
+        borderRadius: '12px',
+        border: '1px solid rgba(212,175,55,0.2)'
+      }}>
+        <div style={{ fontSize: '14px', color: '#d4af37', fontWeight: '600' }}>
+          Phase 2A • {fam} • {state.p2a_ix+1}/7
         </div>
-        <div style={{
-          width: '100%',
-          background: '#0f1220',
-          borderRadius: '999px',
-          height: '8px',
-          border: '1px solid #2a2f3a'
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#aeb7c7',
+          background: 'rgba(0,0,0,0.3)',
+          padding: '4px 8px',
+          borderRadius: '6px'
         }}>
-          <div style={{
-            background: 'linear-gradient(90deg, #d4af37, #e3c566)',
-            height: '100%',
-            borderRadius: '999px',
-            transition: 'width 0.2s',
-            width: `${progress}%`
-          }} />
+          {Math.round(progress)}%
         </div>
+      </div>
+      
+      <div style={{
+        width: '100%',
+        background: '#0f1220',
+        borderRadius: '999px',
+        height: '8px',
+        border: '1px solid #2a2f3a'
+      }}>
+        <div style={{
+          background: 'linear-gradient(90deg, #d4af37, #e3c566)',
+          height: '100%',
+          borderRadius: '999px',
+          transition: 'width 0.2s',
+          width: `${progress}%`
+        }} />
       </div>
       
       <div style={{ textAlign: 'center' }}>
@@ -475,14 +547,16 @@ function Phase2A({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
         {entries.map(e => (
           <button key={e.ax}
             style={{
-              borderRadius: '16px',
+              borderRadius: '20px',
               border: '2px solid #3a3f4a',
-              padding: '28px',
+              padding: '32px 28px',
               textAlign: 'left',
               background: 'linear-gradient(180deg, #1a1d24, #171a20)',
               cursor: 'pointer',
-              transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(0,0,0,.4)'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = '#d4af37';
@@ -503,12 +577,27 @@ function Phase2A({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
               });
             }}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '700',
+                background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.1))',
+                color: '#d4af37',
+                border: '1px solid rgba(212,175,55,0.4)',
+                letterSpacing: '0.5px',
+                boxShadow: '0 2px 8px rgba(212,175,55,0.1)'
+              }}>
                 {e.ax === "C" ? "Commit cleanly" : "Keep options open"}
               </div>
             </div>
-            <div style={{ fontSize: '14px', color: '#d7e0ef', lineHeight: '1.4' }}>
+            <div style={{ 
+              fontSize: '16px', 
+              color: '#f7f3ea', 
+              lineHeight: '1.5',
+              fontWeight: '500'
+            }}>
               {e.text}
             </div>
           </button>
@@ -553,7 +642,7 @@ function BracketInterleaved({state, save}:{state: State; save:(m:(s:State)=>void
   const faceA = FaceName(A), faceB = FaceName(B);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', justifyContent: 'center', paddingTop: '140px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', height: '100%', justifyContent: 'center', paddingTop: '140px', overflow: 'hidden' }}>
       <div style={{ fontSize: '10px', color: '#aeb7c7' }}>{label} • Match {idx+1}/{roundIx===0?4:(roundIx===1?2:1)}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px' }}>
         {[{id:A,face:faceA},{id:B,face:faceB}].map(side => (
@@ -619,9 +708,28 @@ function Phase3({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
   const progress = ((state.p3_ix + 1) / 7) * 100;
   
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'auto' }}>
-      <div style={{ fontSize: '12px', color: '#aeb7c7', marginBottom: '16px' }}>
-        Phase 3 • {fam} • {state.p3_ix+1}/7
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflow: 'hidden' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '12px 16px',
+        background: 'rgba(212,175,55,0.1)',
+        borderRadius: '12px',
+        border: '1px solid rgba(212,175,55,0.2)'
+      }}>
+        <div style={{ fontSize: '14px', color: '#d4af37', fontWeight: '600' }}>
+          Phase 3 • {fam} • {state.p3_ix+1}/7
+        </div>
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#aeb7c7',
+          background: 'rgba(0,0,0,0.3)',
+          padding: '4px 8px',
+          borderRadius: '6px'
+        }}>
+          {Math.round(progress)}%
+        </div>
       </div>
       
       <div style={{ textAlign: 'center' }}>
@@ -632,14 +740,16 @@ function Phase3({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
         {pair.map(ax => (
           <button key={ax}
             style={{
-              borderRadius: '16px',
+              borderRadius: '20px',
               border: '2px solid #3a3f4a',
-              padding: '28px',
+              padding: '32px 28px',
               textAlign: 'left',
               background: 'linear-gradient(180deg, #1a1d24, #171a20)',
               cursor: 'pointer',
-              transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(0,0,0,.4)'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = '#d4af37';
@@ -664,7 +774,12 @@ function Phase3({state, save}:{state: State; save:(m:(s:State)=>void)=>void}){
               });
             }}
           >
-            <div style={{ fontSize: '14px', color: '#d7e0ef', lineHeight: '1.4' }}>
+            <div style={{ 
+              fontSize: '16px', 
+              color: '#f7f3ea', 
+              lineHeight: '1.5',
+              fontWeight: '500'
+            }}>
               {qa.a[ax as Axis]}
             </div>
           </button>

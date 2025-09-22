@@ -7,3 +7,21 @@
 :root { --ring: #93c5fd; }
 * { box-sizing: border-box; }
 :focus { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+
+/* Remove all scroll bars */
+html, body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide scroll bars for all elements */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
