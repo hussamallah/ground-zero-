@@ -25,7 +25,9 @@ function rateLimit(ip: string): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || 
+             'unknown';
   
   if (!rateLimit(ip)) {
     return NextResponse.json(
