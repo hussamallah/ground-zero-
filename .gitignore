@@ -1,0 +1,15 @@
+
+node_modules
+.pnp.*
+.next
+out
+dist
+coverage
+.playwright
+test-results
+.env*
+.vercel
+.vscode
+
+# macOS
+.DS_Store

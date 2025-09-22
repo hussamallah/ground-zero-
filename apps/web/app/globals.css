@@ -1,0 +1,9 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal fallback if Tailwind isn't wired yet */
+:root { --ring: #93c5fd; }
+* { box-sizing: border-box; }
+:focus { outline: none; box-shadow: 0 0 0 3px var(--ring); }

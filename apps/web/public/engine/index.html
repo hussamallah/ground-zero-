@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Ground Zero — Option U • v6 (Gold Theme + Restart)</title>
+<style>
+:root{
+  --bg:#0a0b0f; --panel:#14161c; --ink:#f7f3ea; --muted:#c9bba6; --border:#2a2f3a;
+  /* Premium golds (antique) */
+  --gold:#d4af37;            /* primary metal */
+  --gold-deep:#9c7c2f;       /* shadow gold */
+  --gold-soft:#e3c566;       /* highlight */
+  --card:#1a1d24; --card2:#171a20; --hover:#202530;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 700px at 15% -10%,#121625,#0a0b0f);color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;font-size:18px;line-height:1.5}
+.wrap{max-width:1280px;margin:28px auto 120px;padding:0 24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.title{font-size:18px;font-weight:700;letter-spacing:.2px;color:#aeb7c7}
+.progress{height:8px;background:#0f1220;border-radius:999px;overflow:hidden;border:1px solid var(--border);margin-bottom:10px}
+.bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .2s}
+.panel{background:linear-gradient(180deg,var(--panel),#11151c);border:1px solid var(--border);border-radius:18px;
+  box-shadow:0 16px 36px rgba(0,0,0,.45);padding:22px;margin-top:12px;min-height:520px}
+.hr{height:1px;background:#1e2430;margin:16px 0}
+.small{font-size:12px;color:#9fb0c6}
+.badger{font-size:12px;color:#e9d9ad;border:1px solid var(--border);padding:4px 10px;border-radius:999px;background:#181c24}
+/* Grid */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:1100px){.grid4{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:860px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid4{grid-template-columns:1fr}}
+/* Card button */
+.card{
+  display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:16px;
+  border:1px solid var(--border); background:linear-gradient(180deg,var(--card),var(--card2));
+  transition:transform .15s, border .15s, background .15s; cursor:pointer; min-height:140px; text-align:left;
+}
+.card:hover{transform:translateY(-2px); border-color:#3b455a; background:var(--hover)}
+.card.sel{border-color:var(--gold); box-shadow:0 0 0 2px rgba(212,175,55,.28) inset}
+.icon{ width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(212,175,55,.14);
+  color:var(--gold); font-size:22px; font-weight:900; border:1px solid #6b5620 }
+.name{font-weight:900;color:var(--gold);letter-spacing:.2px}
+.desc{font-size:14px;color:#e8d39a;opacity:.9}
+/* CTA */
+.ctaRow{display:flex;justify-content:center;margin-top:18px}
+.cta{padding:14px 18px;border-radius:999px;border:1px solid var(--border);background:#151922;color:#d7e0ef;
+  font-weight:900; cursor:not-allowed; opacity:.6; transition:all .15s; min-width:320px; text-align:center}
+.cta.ready{cursor:pointer;opacity:1;background:linear-gradient(90deg,var(--gold),var(--gold-soft));color:#1a1208;border-color:#7a6321}
+/* Generic button with same theme */
+.btn{display:inline-flex;align-items:center;gap:12px;padding:14px 16px;border-radius:999px;border:1px solid var(--border);
+  background:linear-gradient(180deg,var(--card),var(--card2));cursor:pointer;font-weight:800;font-size:16px;
+  transition:transform .18s,border .18s,background .18s; user-select:none; color:#e7f0ff}
+.btn:hover{transform:translateY(-1px);border-color:#2a3a52;background:#202530}
+.btn.gold{background:linear-gradient(90deg,var(--gold),var(--gold-soft)); color:#1a1208; border-color:#7a6321}
+.btn.gold:hover{filter:brightness(1.06)}
+/* Axis badge */
+.axis{font-size:12px;font-weight:900;color:#1a1208;background:linear-gradient(90deg,var(--gold),var(--gold-soft));
+  border:1px solid #8a6a2b;border-radius:999px;padding:4px 10px}
+/* Two-up fight cards */
+.fight{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.fighter .name{font-size:20px}
+
+/* Hide axis tokens from UI */
+.axis{display:none!important}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">Ground Zero • Interleaved Bracket (Gold)</div>
+      <div class="small" id="phaseBadge">Boot</div>
+    </header>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div id="screen" class="panel"></div>
+  </div>
+
+<script>
+/* ==== Persistence ==== */
+const KEY="gzq/u6";
+function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function loadState(){
+  try{ const raw=localStorage.getItem(KEY); if(!raw) return false;
+       const s=JSON.parse(raw); Object.assign(state,s); state.p0_sel=new Set(Array.from(state.p0_sel||[])); return true; }catch(e){ return false; }
+}
+
+/* ==== Constants ==== */
+const FAMILIES=["Control","Pace","Boundary","Truth","Recognition","Bonding","Stress"];
+const FACES={Control:["Sovereign","Rebel"],Pace:["Visionary","Navigator"],Boundary:["Equalizer","Guardian"],Truth:["Seeker","Architect"],Recognition:["Spotlight","Diplomat"],Bonding:["Partner","Provider"],Stress:["Catalyst","Artisan"]};
+const ICON={Control:"♛",Pace:"⏱",Boundary:"▦",Truth:"⚖",Recognition:"☼",Bonding:"👥",Stress:"🔥"};
+const DESC={
+  Control:"You set the call and move the plan.",
+  Pace:"You keep time by picking a task and finishing it.",
+  Boundary:"You draw the line and say what can fit now.",
+  Truth:"You hold the reason by checking facts and keeping signals clear.",
+  Recognition:"You show proof and claim the work you did.",
+  Bonding:"You keep trust by caring for and protecting the link.",
+  Stress:"You act when pressure is high and others stall."
+};
+const DUEL_TELLS = {
+  Sovereign:["I commit now.","I set the line."],
+  Rebel:["I defy the drag.","I reroute fast."],
+  Visionary:["I see the arc.","I map outcomes."],
+  Navigator:["I stage the work.","I time the path."],
+  Equalizer:["I balance load.","I keep parity."],
+  Guardian:["I guard the edge.","I enforce scope."],
+  Seeker:["I test claims.","I pierce noise."],
+  Architect:["I structure parts.","I define schema."],
+  Spotlight:["I highlight proof.","I amplify signals."],
+  Diplomat:["I align parties.","I broker terms."],
+  Partner:["I steady the link.","I co-own risk."],
+  Provider:["I fuel the flow.","I keep supply."],
+  Catalyst:["I punch through.","I prime action."],
+  Artisan:["I tune precision.","I polish output."]
+};
+
+/* ==== State ==== */
+const state={
+  phase:"P0",
+  p0_sel:new Set(),
+  p1_ix:0,
+  axisP1:{},
+  faceWinners:{},
+  p2a_ix:0,
+  axisP2:{},
+  entrants:[],
+  bracket:[[],[],[]],
+  brStep:0,
+  top2:[],
+  p3_ix:0,
+  axisP3:{}
+};
+
+const screen=document.getElementById("screen");
+const bar=document.getElementById("bar");
+const badge=document.getElementById("phaseBadge");
+function updateProgress(){
+  let step=0,total=28;
+  if(state.phase==="P0") step=0;
+  else if(state.phase==="P1") step=1+state.p1_ix;
+  else if(state.phase==="P2A"||state.phase==="BR_INT") step=8+state.p2a_ix;
+  else if(state.phase==="P3") step=22+state.p3_ix;
+  else if(state.phase==="SUM") step=28;
+  bar.style.width=Math.round(step/total*100)+"%"; badge.textContent=state.phase;
+}
+function renderP2B(){
+  if(state.p2b_ix==null) state.p2b_ix = 0;
+  if(!state.faceDuels) state.faceDuels = {};
+  const fam = FAMILIES[state.p2b_ix];
+  const pair = P2B_COPY[fam];
+  const card = (opt)=>`
+    <div class="card" data-face="${opt.face}">
+      <div class="name">${opt.face}</div>
+    </div>`;
+  screen.innerHTML = `
+    <div class="small">Phase 2B • ${fam} • ${state.p2b_ix+1}/7</div>
+    <div class="hr"></div>
+    <div class="grid2">
+      ${card(pair[0])}
+      ${card(pair[1])}
+    </div>`;
+  screen.querySelectorAll(".card[data-face]").forEach(el=>{
+    el.onclick = ()=>{
+      const face = el.getAttribute("data-face");
+      state.faceDuels[fam] = face;if(!state.faceWinners) state.faceWinners = {};state.faceWinners[fam] = face;saveState();if(state.p2a_ix<6){  state.p2a_ix++; state.phase="P2A"; saveState(); render();}else{  state.phase="BR_INT"; state.brStep=0; saveState(); render();}
+    };
+  });
+}
+function render(){ updateProgress();
+  if(state.phase==="P0") return renderP0();
+  if(state.phase==="P1") return renderP1();
+  if(state.phase==="P2A") return renderP2A();
+  if(state.phase==="BR_INT") return renderBracketInterleaved();
+  if(state.phase==="P3") return renderP3();
+  if(state.phase==="SUM") return renderSummary();
+}
+
+/* ==== Phase 0 ==== */
+function renderP0(){
+  const cards = FAMILIES.map(f=>`
+    <div class="card ${state.p0_sel.has(f)?"sel":""}" data-f="${f}">
+      <div class="icon">${ICON[f]}</div>
+      <div class="name">${f}</div>
+      <div class="desc">${DESC[f]}</div>
+    </div>`).join("");
+  screen.innerHTML = `<div class="grid4">${cards}</div>
+    <div class="ctaRow"><div id="cta" class="cta">Select 3 families to continue</div></div>`;
+  screen.querySelectorAll("[data-f]").forEach(el=>el.onclick=()=>{
+    const f=el.getAttribute("data-f");
+    if(state.p0_sel.has(f)) state.p0_sel.delete(f);
+    else { if(state.p0_sel.size>=3) return; state.p0_sel.add(f); }
+    saveState(); render();
+  });
+  const cta=document.getElementById("cta");
+  if(state.p0_sel.size===3){ cta.classList.add("ready"); cta.textContent="Continue";
+    cta.onclick=()=>{ state.phase="P1"; state.p1_ix=0; saveState(); render(); };
+  } else { cta.classList.remove("ready"); cta.onclick=null; }
+}
+
+/* ==== Phase 1 ==== */
+const P1_BANK = {"Control": [{"axis": "C", "face": "Sovereign", "text": "Make final call", "tell": "TELL/Control/Sovereign/sets-call"}, {"axis": "O", "face": "Sovereign", "text": "Flag inefficiency", "tell": "TELL/Control/Sovereign/narrates-what-is"}, {"axis": "F", "face": "Sovereign", "text": "Exit the planning", "tell": "TELL/Control/Sovereign/stops-debate"}, {"axis": "C", "face": "Rebel", "text": "Propose simple fix", "tell": "TELL/Control/Rebel/proposes-rogue-path"}, {"axis": "O", "face": "Rebel", "text": "Quiet workaround", "tell": "TELL/Control/Rebel/bypasses-gate"}, {"axis": "F", "face": "Rebel", "text": "Mock and derail", "tell": "TELL/Control/Rebel/tears-down-blocker"}], "Pace": [{"axis": "C", "face": "Navigator", "text": "Serve what’s ready", "tell": "TELL/Pace/Navigator/adaptive-reroute"}, {"axis": "O", "face": "Navigator", "text": "Rush to catch up", "tell": "TELL/Pace/Navigator/checkpoint-progress"}, {"axis": "F", "face": "Navigator", "text": "Stick to plan", "tell": "TELL/Pace/Navigator/plan-then-execute"}, {"axis": "C", "face": "Visionary", "text": "Pivot the menu", "tell": "TELL/Pace/Visionary/pivot-on-signal"}, {"axis": "O", "face": "Visionary", "text": "Juggle everything", "tell": "TELL/Pace/Visionary/widen-scope-for-idea"}, {"axis": "F", "face": "Visionary", "text": "Order takeout", "tell": "TELL/Pace/Visionary/sunset-commitment"}], "Truth": [{"axis": "C", "face": "Seeker", "text": "Run isolating tests", "tell": "TELL/Truth/Seeker/isolate-variable"}, {"axis": "O", "face": "Seeker", "text": "Scan similar cases", "tell": "TELL/Truth/Seeker/compare-baselines"}, {"axis": "F", "face": "Seeker", "text": "Blame provider", "tell": "TELL/Truth/Seeker/expose-bias"}, {"axis": "C", "face": "Architect", "text": "Log drop times", "tell": "TELL/Truth/Architect/single-source-of-truth"}, {"axis": "O", "face": "Architect", "text": "Swap parts blindly", "tell": "TELL/Truth/Architect/version-decisions"}, {"axis": "F", "face": "Architect", "text": "Hotspot and quit", "tell": "TELL/Truth/Architect/fail-safe-default"}], "Boundary": [{"axis": "C", "face": "Guardian", "text": "Restate boundary", "tell": "TELL/Boundary/Guardian/define-entry-criteria"}, {"axis": "O", "face": "Guardian", "text": "Delay response", "tell": "TELL/Boundary/Guardian/hold-line-under-pressure"}, {"axis": "F", "face": "Guardian", "text": "Blow up", "tell": "TELL/Boundary/Guardian/escalate-noncompliance"}, {"axis": "C", "face": "Equalizer", "text": "Trade tasks", "tell": "TELL/Boundary/Equalizer/negotiate-tradeoff"}, {"axis": "O", "face": "Equalizer", "text": "Say yes, resent", "tell": "TELL/Boundary/Equalizer/protect-margins"}, {"axis": "F", "face": "Equalizer", "text": "Do it, snipe later", "tell": "TELL/Boundary/Equalizer/decline-freework"}], "Recognition": [{"axis": "C", "face": "Spotlight", "text": "Show proof cleanly", "tell": "TELL/Recognition/Spotlight/make-visible"}, {"axis": "O", "face": "Spotlight", "text": "Ask coach later", "tell": "TELL/Recognition/Spotlight/request-feedback"}, {"axis": "F", "face": "Spotlight", "text": "Demand credit now", "tell": "TELL/Recognition/Spotlight/claim-credit"}, {"axis": "C", "face": "Diplomat", "text": "Prioritize team win", "tell": "TELL/Recognition/Diplomat/preserve-face"}, {"axis": "O", "face": "Diplomat", "text": "Nudge via teammate", "tell": "TELL/Recognition/Diplomat/align-stakeholders"}, {"axis": "F", "face": "Diplomat", "text": "Withdraw ideas", "tell": "TELL/Recognition/Diplomat/avoid-conflict"}], "Bonding": [{"axis": "C", "face": "Partner", "text": "Simple check-in", "tell": "TELL/Bonding/Partner/check-in-later"}, {"axis": "O", "face": "Partner", "text": "Are you mad at me?", "tell": "TELL/Bonding/Partner/repair-rupture"}, {"axis": "F", "face": "Partner", "text": "Stop reaching out", "tell": "TELL/Bonding/Partner/revoke-on-miss"}, {"axis": "C", "face": "Provider", "text": "Offer specific help", "tell": "TELL/Bonding/Provider/ask-what-they-need"}, {"axis": "O", "face": "Provider", "text": "Invite to groups", "tell": "TELL/Bonding/Provider/redistribute-help"}, {"axis": "F", "face": "Provider", "text": "Speculate to others", "tell": "TELL/Bonding/Provider/escalate-support"}], "Stress": [{"axis": "C", "face": "Artisan", "text": "Orient calmly", "tell": "TELL/Stress/Artisan/steady-hands"}, {"axis": "O", "face": "Artisan", "text": "Wait till morning", "tell": "TELL/Stress/Artisan/fail-safe-default"}, {"axis": "F", "face": "Artisan", "text": "Waste time blaming", "tell": "TELL/Stress/Artisan/patch-without-drama"}, {"axis": "C", "face": "Catalyst", "text": "Climb for view", "tell": "TELL/Stress/Catalyst/act-on-the-line"}, {"axis": "O", "face": "Catalyst", "text": "Push pace blindly", "tell": "TELL/Stress/Catalyst/push-through-friction"}, {"axis": "F", "face": "Catalyst", "text": "Panic rush", "tell": "TELL/Stress/Catalyst/accelerate-risk"}]};
+
+const P1_Q_BANK = {"Control": ["Your friend group is trying to plan a weekend trip, but a new \"rule\" someone insisted on (like \"we can only drive, no flying\") is making everything complicated and annoying. What do you do?", "The assembly instructions for a new piece of furniture are wrong. What now?", "You're playing a casual game of tennis with a friend who keeps making questionable calls in their own favor. It's subtle, but you're sure they're bending the rules. How do you handle it?"], "Pace": ["You're hosting a big dinner for friends, and you're running out of time. Everything is behind schedule. What's your move?", "Your road trip is falling behind the agreed-upon schedule. How do you respond?", "Your new routine is exhausting. Your move?"], "Truth": ["Your home internet has become unreliable, cutting out randomly. You're not sure if the problem is your router, the service provider, or something else. What do you do?", "You hear a rumor about a friend that sounds completely out of character. How do you react?", "You're lost in the movie's plot. What do you do?"], "Boundary": ["You're organizing a group vacation, and one friend keeps asking you to handle their personal tasks—like booking their separate flight or finding their pet sitter—which wasn't part of the plan. How do you handle it?", "A draining relative wants to stay with you for a full week, but you're already feeling overwhelmed. What's your answer?", "A friend still hasn't repaid a loan. What's your move?"], "Recognition": ["You play on a competitive sports team. You developed a new, successful strategy that led to a key victory. In the post-game summary, the coach gives full credit for the strategy to the team captain, who is a long-time favorite. What do you do?", "You gave a thoughtful gift, but their reaction was muted and they quickly set it aside. How do you feel?", "Your proud post gets no likes. Your reaction?"], "Bonding": ["Your close friend seems down and has been canceling plans lately. How do you approach the situation?", "A friend needs your help moving on your only day off. What do you do?", "Your friend brings you to a party and then leaves you alone. How do you handle it?"], "Stress": ["You're out on a long hike and realize you’ve taken a wrong turn. You're now lost in the woods, and the sun is starting to set. What is your first move?", "You just ruined a key ingredient while cooking dinner. What is your next move?", "Your power cuts out mid-meeting. What next?"]};
+const P2B_COPY = {"Control": [{"face": "Sovereign", "text": "Prefer clear authority and final decisions when plans stall."}, {"face": "Rebel", "text": "Challenge bad rules and push simple alternatives when systems fail."}], "Pace": [{"face": "Navigator", "text": "Re-sequence plans to fit reality and keep flow smooth."}, {"face": "Visionary", "text": "Stretch the vision and energize momentum under time pressure."}], "Truth": [{"face": "Seeker", "text": "Test and verify specifics before concluding anything."}, {"face": "Architect", "text": "Create structure and logs so decisions rest on a single source of truth."}], "Boundary": [{"face": "Guardian", "text": "Protect scope and safety with firm, clear limits."}, {"face": "Equalizer", "text": "Keep things fair with trades and balanced expectations."}], "Recognition": [{"face": "Spotlight", "text": "Make contributions visible and ask for direct acknowledgment."}, {"face": "Diplomat", "text": "Preserve relationships and harmony, credit can arrive indirectly."}], "Bonding": [{"face": "Partner", "text": "Prioritize loyalty and steady presence over noise."}, {"face": "Provider", "text": "Offer practical support and service to show care."}], "Stress": [{"face": "Artisan", "text": "Steady hands first: method and control under pressure."}, {"face": "Catalyst", "text": "Spark decisive action fast to create movement."}]};
+const P1_QA = {"Control": [{"q": "Your friend group is planning a weekend trip, but a new rule is making it messy. What do you do?", "options": [{"axis": "C", "face": "Sovereign", "text": "Make a clear final plan and lock roles so we move.", "tell": "TELL/Control/Sovereign/sets-call"}, {"axis": "O", "face": "Sovereign", "text": "Point out how the rule slows us down without proposing a fix.", "tell": "TELL/Control/Sovereign/narrates-what-is"}, {"axis": "F", "face": "Sovereign", "text": "Call the plan a mess and step back from planning.", "tell": "TELL/Control/Sovereign/stops-debate"}, {"axis": "C", "face": "Rebel", "text": "Say the rule fails and replace it with a simpler alternative.", "tell": "TELL/Control/Rebel/proposes-rogue-path"}, {"axis": "O", "face": "Rebel", "text": "Quietly bypass the rule for yourself without fixing it for the group.", "tell": "TELL/Control/Rebel/bypasses-gate"}, {"axis": "F", "face": "Rebel", "text": "Mock the rule and its author, derailing the conversation.", "tell": "TELL/Control/Rebel/tears-down-blocker"}]}, {"q": "The assembly instructions are wrong. What now?", "options": [{"axis": "C", "face": "Sovereign", "text": "Build by sense and take ownership of the outcome.", "tell": "TELL/Control/Sovereign/sets-call"}, {"axis": "O", "face": "Sovereign", "text": "Check a tutorial to compare against the flawed guide.", "tell": "TELL/Control/Sovereign/narrates-what-is"}, {"axis": "F", "face": "Sovereign", "text": "Drop it for later and leave the pieces on the floor.", "tell": "TELL/Control/Sovereign/stops-debate"}, {"axis": "C", "face": "Rebel", "text": "Rewrite the steps into a short, workable sequence.", "tell": "TELL/Control/Rebel/proposes-rogue-path"}, {"axis": "O", "face": "Rebel", "text": "Patch around the bad step so you can keep moving.", "tell": "TELL/Control/Rebel/bypasses-gate"}, {"axis": "F", "face": "Rebel", "text": "Rant about the manual and toss the tools in frustration.", "tell": "TELL/Control/Rebel/tears-down-blocker"}]}, {"q": "Casual tennis: your friend keeps making sketchy calls. What do you do?", "options": [{"axis": "C", "face": "Sovereign", "text": "Set a clear line rule and apply it consistently.", "tell": "TELL/Control/Sovereign/sets-call"}, {"axis": "O", "face": "Sovereign", "text": "Suggest quick reviews on close calls without pushing.", "tell": "TELL/Control/Sovereign/narrates-what-is"}, {"axis": "F", "face": "Sovereign", "text": "Stop the game rather than play under bad calls.", "tell": "TELL/Control/Sovereign/stops-debate"}, {"axis": "C", "face": "Rebel", "text": "Call it out plainly and propose a simple fix.", "tell": "TELL/Control/Rebel/proposes-rogue-path"}, {"axis": "O", "face": "Rebel", "text": "Even the calls to balance the advantage.", "tell": "TELL/Control/Rebel/bypasses-gate"}, {"axis": "F", "face": "Rebel", "text": "Mock the calls and needle your friend till play collapses.", "tell": "TELL/Control/Rebel/tears-down-blocker"}]}], "Pace": [{"q": "Hosting dinner, you’re behind. What’s your move?", "options": [{"axis": "C", "face": "Navigator", "text": "Serve what’s ready now and rewrite the sequence on the fly.", "tell": "TELL/Pace/Navigator/adaptive-reroute"}, {"axis": "O", "face": "Navigator", "text": "Apologize and rush tasks, trying to catch the original plan.", "tell": "TELL/Pace/Navigator/checkpoint-progress"}, {"axis": "F", "face": "Navigator", "text": "Stick rigidly to the plan even if dinner gets very late.", "tell": "TELL/Pace/Navigator/plan-then-execute"}, {"axis": "C", "face": "Visionary", "text": "Announce a fresh impromptu menu that fits the time left.", "tell": "TELL/Pace/Visionary/pivot-on-signal"}, {"axis": "O", "face": "Visionary", "text": "Start multiple dishes at once to brute-force momentum.", "tell": "TELL/Pace/Visionary/widen-scope-for-idea"}, {"axis": "F", "face": "Visionary", "text": "Give up on the plan entirely and order takeout.", "tell": "TELL/Pace/Visionary/sunset-commitment"}]}, {"q": "Road trip is behind the schedule. Response?", "options": [{"axis": "C", "face": "Navigator", "text": "Replan stops and timing so the route works again.", "tell": "TELL/Pace/Navigator/adaptive-reroute"}, {"axis": "O", "face": "Navigator", "text": "Push the pace to claw back time.", "tell": "TELL/Pace/Navigator/checkpoint-progress"}, {"axis": "F", "face": "Navigator", "text": "Insist on the original schedule even if it breaks the trip.", "tell": "TELL/Pace/Navigator/plan-then-execute"}, {"axis": "C", "face": "Visionary", "text": "Reframe the trip’s aim to match reality now.", "tell": "TELL/Pace/Visionary/pivot-on-signal"}, {"axis": "O", "face": "Visionary", "text": "Try to do everything faster without changing plan.", "tell": "TELL/Pace/Visionary/widen-scope-for-idea"}, {"axis": "F", "face": "Visionary", "text": "Call the plan dead and mentally check out.", "tell": "TELL/Pace/Visionary/sunset-commitment"}]}, {"q": "Your new routine is exhausting. Your move?", "options": [{"axis": "C", "face": "Navigator", "text": "Lower the intensity so it’s sustainable.", "tell": "TELL/Pace/Navigator/adaptive-reroute"}, {"axis": "O", "face": "Navigator", "text": "Maintain the pace hoping the body adapts soon.", "tell": "TELL/Pace/Navigator/checkpoint-progress"}, {"axis": "F", "face": "Navigator", "text": "Plan more instead of starting; delay action.", "tell": "TELL/Pace/Navigator/plan-then-execute"}, {"axis": "C", "face": "Visionary", "text": "Adjust the vision so success is paced, not burned.", "tell": "TELL/Pace/Visionary/pivot-on-signal"}, {"axis": "O", "face": "Visionary", "text": "Push through the fatigue to keep the ideal alive.", "tell": "TELL/Pace/Visionary/widen-scope-for-idea"}, {"axis": "F", "face": "Visionary", "text": "Quit entirely rather than shrink the vision.", "tell": "TELL/Pace/Visionary/sunset-commitment"}]}], "Truth": [{"q": "Home internet cuts out randomly. What do you do?", "options": [{"axis": "C", "face": "Seeker", "text": "Run quick controlled tests to isolate the failing link.", "tell": "TELL/Truth/Seeker/isolate-variable"}, {"axis": "O", "face": "Seeker", "text": "Hunt through similar cases online before you test anything.", "tell": "TELL/Truth/Seeker/compare-baselines"}, {"axis": "F", "face": "Seeker", "text": "Blame the ISP immediately without checking your setup.", "tell": "TELL/Truth/Seeker/expose-bias"}, {"axis": "C", "face": "Architect", "text": "Log drop times and conditions to build a clear record.", "tell": "TELL/Truth/Architect/single-source-of-truth"}, {"axis": "O", "face": "Architect", "text": "Swap hardware preemptively without confirming the cause.", "tell": "TELL/Truth/Architect/version-decisions"}, {"axis": "F", "face": "Architect", "text": "Abandon troubleshooting and rely on your phone hotspot.", "tell": "TELL/Truth/Architect/fail-safe-default"}]}, {"q": "You hear a rumor about a friend. Reaction?", "options": [{"axis": "C", "face": "Seeker", "text": "Go straight to them and check the claim.", "tell": "TELL/Truth/Seeker/isolate-variable"}, {"axis": "O", "face": "Seeker", "text": "Ask others if they’ve heard it to gauge signal.", "tell": "TELL/Truth/Seeker/compare-baselines"}, {"axis": "F", "face": "Seeker", "text": "Assume the worst and avoid them for now.", "tell": "TELL/Truth/Seeker/expose-bias"}, {"axis": "C", "face": "Architect", "text": "Set a quick check rule for what counts as proof.", "tell": "TELL/Truth/Architect/single-source-of-truth"}, {"axis": "O", "face": "Architect", "text": "Hold two reads lightly while you gather more.", "tell": "TELL/Truth/Architect/version-decisions"}, {"axis": "F", "face": "Architect", "text": "Quietly accept the rumor without any check.", "tell": "TELL/Truth/Architect/fail-safe-default"}]}, {"q": "You’re lost in the movie’s plot. Next?", "options": [{"axis": "C", "face": "Seeker", "text": "Ask for a quick recap to rejoin the thread.", "tell": "TELL/Truth/Seeker/isolate-variable"}, {"axis": "O", "face": "Seeker", "text": "Keep watching and infer from context.", "tell": "TELL/Truth/Seeker/compare-baselines"}, {"axis": "F", "face": "Seeker", "text": "Zone out and stop trying to follow.", "tell": "TELL/Truth/Seeker/expose-bias"}, {"axis": "C", "face": "Architect", "text": "Note the key beats you must track.", "tell": "TELL/Truth/Architect/single-source-of-truth"}, {"axis": "O", "face": "Architect", "text": "Skip to a summary to regain footing.", "tell": "TELL/Truth/Architect/version-decisions"}, {"axis": "F", "face": "Architect", "text": "Stop caring about the plot altogether.", "tell": "TELL/Truth/Architect/fail-safe-default"}]}], "Boundary": [{"q": "Group vacation: someone keeps pushing their personal tasks onto you. Response?", "options": [{"axis": "C", "face": "Guardian", "text": "Restate the boundary and what you will and won’t do.", "tell": "TELL/Boundary/Guardian/define-entry-criteria"}, {"axis": "O", "face": "Guardian", "text": "Pause and hope they self-correct without a confrontation.", "tell": "TELL/Boundary/Guardian/hold-line-under-pressure"}, {"axis": "F", "face": "Guardian", "text": "Blow up and accuse them of ruining the trip.", "tell": "TELL/Boundary/Guardian/escalate-noncompliance"}, {"axis": "C", "face": "Equalizer", "text": "Offer a fair trade: you’ll help if they take one of yours.", "tell": "TELL/Boundary/Equalizer/negotiate-tradeoff"}, {"axis": "O", "face": "Equalizer", "text": "Say yes but carry resentment, hoping they notice.", "tell": "TELL/Boundary/Equalizer/protect-margins"}, {"axis": "F", "face": "Equalizer", "text": "Do the tasks, then make passive shots about it later.", "tell": "TELL/Boundary/Equalizer/decline-freework"}]}, {"q": "A draining relative wants to stay a full week. Your answer?", "options": [{"axis": "C", "face": "Guardian", "text": "Say no kindly and explain it’s not a good time.", "tell": "TELL/Boundary/Guardian/define-entry-criteria"}, {"axis": "O", "face": "Guardian", "text": "Offer a shorter weekend stay as a compromise.", "tell": "TELL/Boundary/Guardian/hold-line-under-pressure"}, {"axis": "F", "face": "Guardian", "text": "Say yes then run yourself into the ground.", "tell": "TELL/Boundary/Guardian/escalate-noncompliance"}, {"axis": "C", "face": "Equalizer", "text": "Propose a fair swap for any help you provide.", "tell": "TELL/Boundary/Equalizer/negotiate-tradeoff"}, {"axis": "O", "face": "Equalizer", "text": "Agree quietly and hope it balances later.", "tell": "TELL/Boundary/Equalizer/protect-margins"}, {"axis": "F", "face": "Equalizer", "text": "Do everything and complain afterward.", "tell": "TELL/Boundary/Equalizer/decline-freework"}]}, {"q": "A friend still hasn’t repaid a loan. Move?", "options": [{"axis": "C", "face": "Guardian", "text": "Give a gentle, direct reminder.", "tell": "TELL/Boundary/Guardian/define-entry-criteria"}, {"axis": "O", "face": "Guardian", "text": "Wait to see if they remember on their own.", "tell": "TELL/Boundary/Guardian/hold-line-under-pressure"}, {"axis": "F", "face": "Guardian", "text": "Decide to never lend again but say nothing.", "tell": "TELL/Boundary/Guardian/escalate-noncompliance"}, {"axis": "C", "face": "Equalizer", "text": "Suggest a small repayment plan that’s fair.", "tell": "TELL/Boundary/Equalizer/negotiate-tradeoff"}, {"axis": "O", "face": "Equalizer", "text": "Hint about it and hope they get it.", "tell": "TELL/Boundary/Equalizer/protect-margins"}, {"axis": "F", "face": "Equalizer", "text": "Hold a grudge and avoid the topic.", "tell": "TELL/Boundary/Equalizer/decline-freework"}]}], "Recognition": [{"q": "Coach credits your strategy to the captain. What do you do?", "options": [{"axis": "C", "face": "Spotlight", "text": "Walk the team through the strategy so your ownership is clear.", "tell": "TELL/Recognition/Spotlight/make-visible"}, {"axis": "O", "face": "Spotlight", "text": "Ask the coach privately for feedback on your strategy.", "tell": "TELL/Recognition/Spotlight/request-feedback"}, {"axis": "F", "face": "Spotlight", "text": "Confront the credit in front of everyone right now.", "tell": "TELL/Recognition/Spotlight/claim-credit"}, {"axis": "C", "face": "Diplomat", "text": "Let it go for team harmony; the right people know.", "tell": "TELL/Recognition/Diplomat/preserve-face"}, {"axis": "O", "face": "Diplomat", "text": "Have a teammate mention your contribution later.", "tell": "TELL/Recognition/Diplomat/align-stakeholders"}, {"axis": "F", "face": "Diplomat", "text": "Withdraw and stop sharing ideas going forward.", "tell": "TELL/Recognition/Diplomat/avoid-conflict"}]}, {"q": "You gave a thoughtful gift. Their reaction is muted. How do you feel?", "options": [{"axis": "C", "face": "Spotlight", "text": "Let it go; intention matters more than applause.", "tell": "TELL/Recognition/Spotlight/make-visible"}, {"axis": "O", "face": "Spotlight", "text": "Ask later if they liked it to get a clearer signal.", "tell": "TELL/Recognition/Spotlight/request-feedback"}, {"axis": "F", "face": "Spotlight", "text": "Feel slighted and consider pulling back next time.", "tell": "TELL/Recognition/Spotlight/claim-credit"}, {"axis": "C", "face": "Diplomat", "text": "Hold the bigger picture and enjoy the moment anyway.", "tell": "TELL/Recognition/Diplomat/preserve-face"}, {"axis": "O", "face": "Diplomat", "text": "Check with a friend about timing or framing next time.", "tell": "TELL/Recognition/Diplomat/align-stakeholders"}, {"axis": "F", "face": "Diplomat", "text": "Get resentful and stop putting in effort.", "tell": "TELL/Recognition/Diplomat/avoid-conflict"}]}, {"q": "Your proud post gets no likes. Reaction?", "options": [{"axis": "C", "face": "Spotlight", "text": "Keep it up; you posted it for you.", "tell": "TELL/Recognition/Spotlight/make-visible"}, {"axis": "O", "face": "Spotlight", "text": "Consider a better posting time next round.", "tell": "TELL/Recognition/Spotlight/request-feedback"}, {"axis": "F", "face": "Spotlight", "text": "Feel embarrassed and think about deleting it.", "tell": "TELL/Recognition/Spotlight/claim-credit"}, {"axis": "C", "face": "Diplomat", "text": "Value the message over the metrics.", "tell": "TELL/Recognition/Diplomat/preserve-face"}, {"axis": "O", "face": "Diplomat", "text": "Ask a trusted friend what landed or didn’t.", "tell": "TELL/Recognition/Diplomat/align-stakeholders"}, {"axis": "F", "face": "Diplomat", "text": "Decide to stop sharing for a while.", "tell": "TELL/Recognition/Diplomat/avoid-conflict"}]}], "Bonding": [{"q": "Close friend seems down and keeps canceling. How do you approach it?", "options": [{"axis": "C", "face": "Partner", "text": "Send a simple check-in; no pressure to reply.", "tell": "TELL/Bonding/Partner/check-in-later"}, {"axis": "O", "face": "Partner", "text": "Ask if they’re upset with you, centering your worry.", "tell": "TELL/Bonding/Partner/repair-rupture"}, {"axis": "F", "face": "Partner", "text": "Stop reaching out and wait for them to initiate.", "tell": "TELL/Bonding/Partner/revoke-on-miss"}, {"axis": "C", "face": "Provider", "text": "Offer one concrete help like an errand or meal.", "tell": "TELL/Bonding/Provider/ask-what-they-need"}, {"axis": "O", "face": "Provider", "text": "Invite them to big group plans to apply social lift.", "tell": "TELL/Bonding/Provider/redistribute-help"}, {"axis": "F", "face": "Provider", "text": "Speculate about them with others instead of checking in.", "tell": "TELL/Bonding/Provider/escalate-support"}]}, {"q": "Friend needs moving help on your only day off. What do you do?", "options": [{"axis": "C", "face": "Partner", "text": "Help for a set window and hold your limit.", "tell": "TELL/Bonding/Partner/check-in-later"}, {"axis": "O", "face": "Partner", "text": "Commit the whole day even though you’ll regret it.", "tell": "TELL/Bonding/Partner/repair-rupture"}, {"axis": "F", "face": "Partner", "text": "Make an excuse and disengage completely.", "tell": "TELL/Bonding/Partner/revoke-on-miss"}, {"axis": "C", "face": "Provider", "text": "Offer a targeted task that helps most.", "tell": "TELL/Bonding/Provider/ask-what-they-need"}, {"axis": "O", "face": "Provider", "text": "Show up with the group and see what sticks.", "tell": "TELL/Bonding/Provider/redistribute-help"}, {"axis": "F", "face": "Provider", "text": "Complain to others rather than answer directly.", "tell": "TELL/Bonding/Provider/escalate-support"}]}, {"q": "Your friend brings you to a party, then leaves you alone. What now?", "options": [{"axis": "C", "face": "Partner", "text": "Introduce yourself to someone and reset the vibe.", "tell": "TELL/Bonding/Partner/check-in-later"}, {"axis": "O", "face": "Partner", "text": "Wait in a quiet corner for them to return.", "tell": "TELL/Bonding/Partner/repair-rupture"}, {"axis": "F", "face": "Partner", "text": "Get resentful and stew the rest of the night.", "tell": "TELL/Bonding/Partner/revoke-on-miss"}, {"axis": "C", "face": "Provider", "text": "Offer to help the host with a quick task to engage.", "tell": "TELL/Bonding/Provider/ask-what-they-need"}, {"axis": "O", "face": "Provider", "text": "Drift around hoping a group pulls you in.", "tell": "TELL/Bonding/Provider/redistribute-help"}, {"axis": "F", "face": "Provider", "text": "Message others about being ditched instead of adapting.", "tell": "TELL/Bonding/Provider/escalate-support"}]}], "Stress": [{"q": "Lost on a hike as daylight fades. First move?", "options": [{"axis": "C", "face": "Artisan", "text": "Stop, breathe, and re-orient with map and compass.", "tell": "TELL/Stress/Artisan/steady-hands"}, {"axis": "O", "face": "Artisan", "text": "Pick a safe spot and wait for daylight.", "tell": "TELL/Stress/Artisan/fail-safe-default"}, {"axis": "F", "face": "Artisan", "text": "Waste time blaming yourself or others.", "tell": "TELL/Stress/Artisan/patch-without-drama"}, {"axis": "C", "face": "Catalyst", "text": "Head to nearby high ground to regain a view.", "tell": "TELL/Stress/Catalyst/act-on-the-line"}, {"axis": "O", "face": "Catalyst", "text": "Walk faster on the same path hoping it looks familiar.", "tell": "TELL/Stress/Catalyst/push-through-friction"}, {"axis": "F", "face": "Catalyst", "text": "Panic and rush in a random direction.", "tell": "TELL/Stress/Catalyst/accelerate-risk"}]}, {"q": "You just ruined a key ingredient while cooking. Next move?", "options": [{"axis": "C", "face": "Artisan", "text": "Assess what’s left and adapt the recipe cleanly.", "tell": "TELL/Stress/Artisan/steady-hands"}, {"axis": "O", "face": "Artisan", "text": "Patch the mistake and hope no one notices.", "tell": "TELL/Stress/Artisan/fail-safe-default"}, {"axis": "F", "face": "Artisan", "text": "Call the meal a failure and stop.", "tell": "TELL/Stress/Artisan/patch-without-drama"}, {"axis": "C", "face": "Catalyst", "text": "Start a focused rescue dish right away.", "tell": "TELL/Stress/Catalyst/act-on-the-line"}, {"axis": "O", "face": "Catalyst", "text": "Crank the heat and rush everything.", "tell": "TELL/Stress/Catalyst/push-through-friction"}, {"axis": "F", "face": "Catalyst", "text": "Spin out and abandon the kitchen.", "tell": "TELL/Stress/Catalyst/accelerate-risk"}]}, {"q": "Your power cuts out mid-meeting. What next?", "options": [{"axis": "C", "face": "Artisan", "text": "Switch to hotspot and rejoin immediately.", "tell": "TELL/Stress/Artisan/steady-hands"}, {"axis": "O", "face": "Artisan", "text": "Wait a minute to see if power returns.", "tell": "TELL/Stress/Artisan/fail-safe-default"}, {"axis": "F", "face": "Artisan", "text": "Accept it’s over and drop out.", "tell": "TELL/Stress/Artisan/patch-without-drama"}, {"axis": "C", "face": "Catalyst", "text": "Call in by phone to keep momentum.", "tell": "TELL/Stress/Catalyst/act-on-the-line"}, {"axis": "O", "face": "Catalyst", "text": "Ping the chat and stall for time.", "tell": "TELL/Stress/Catalyst/push-through-friction"}, {"axis": "F", "face": "Catalyst", "text": "Rant about the outage instead of solving it.", "tell": "TELL/Stress/Catalyst/accelerate-risk"}]}]};
+
+const P2A_QA = {"Truth": {"q": "You hear a rumor about a friend that sounds completely out of character. How do you react?", "a": {"C": "You go directly to your friend to hear their side of the story.", "O": "You ask other people if they've also heard the rumor to see if it's true."}}, "Pace": {"q": "Your road trip is falling behind the agreed-upon schedule. How do you respond?", "a": {"C": "You suggest a new, more realistic schedule that everyone can agree on.", "O": "You try to rush through the next few stops to make up for lost time."}}, "Boundary": {"q": "A draining relative wants to stay with you for a full week, but you're already feeling overwhelmed. What's your answer?", "a": {"C": "You say \"no\" kindly but firmly, explaining that it's not a good time for you.", "O": "You suggest a shorter stay, like just for the weekend, as a compromise."}}, "Recognition": {"q": "You gave a thoughtful gift, but their reaction was muted and they quickly set it aside. How do you feel?", "a": {"C": "You let it go, trusting that your good intention is what matters.", "O": "You ask them later if they liked the gift, trying to get a clearer signal."}}, "Bonding": {"q": "A friend needs your help moving on your only day off. What do you do?", "a": {"C": "You offer to help for a few hours, setting a clear limit on your time.", "O": "You agree to help all day, even though you know you'll be exhausted."}}, "Stress": {"q": "You just ruined a key ingredient while cooking dinner. What is your next move?", "a": {"C": "You calmly assess what's left and skillfully adapt the recipe.", "O": "You try to patch the mistake, hoping no one will notice the difference in taste."}}, "Control": {"q": "The assembly instructions for a new piece of furniture are wrong. What now?", "a": {"C": "You ignore them and figure it out yourself using common sense.", "O": "You find a video tutorial online to see how someone else did it."}}};
+const P3_QA = {"Truth": {"q": "You're lost in the movie's plot. What do you do?", "a": {"C": "You ask a friend to quickly explain what you missed.", "O": "You keep watching, hoping you'll eventually figure it out from the context.", "F": "You pull out your phone and start scrolling, having given up on the movie."}}, "Pace": {"q": "Your new routine is exhausting. Your move?", "a": {"C": "You reduce the intensity so it's more sustainable and you can stick with it.", "O": "You push through the exhaustion, hoping your body will eventually adapt.", "F": "You quit the routine altogether because it's too hard."}}, "Boundary": {"q": "A friend still hasn't repaid a loan. What's your move?", "a": {"C": "You gently remind them about it.", "O": "You hope they remember on their own without you saying anything.", "F": "You decide to never lend them money again but don't say anything."}}, "Recognition": {"q": "Your proud post gets no likes. Your reaction?", "a": {"C": "You're okay with it; you posted it for yourself.", "O": "You wonder if you should have posted it at a different time of day.", "F": "You feel embarrassed and consider deleting it."}}, "Bonding": {"q": "Your friend brings you to a party and then leaves you alone. How do you handle it?", "a": {"C": "You introduce yourself to someone new.", "O": "You find a quiet corner and wait for your friend to come back.", "F": "You feel resentful toward your friend for abandoning you."}}, "Stress": {"q": "Your power cuts out mid-meeting. What next?", "a": {"C": "You immediately switch to your phone's hotspot to rejoin.", "O": "You wait a minute to see if the power comes back on by itself.", "F": "You accept that the meeting is over for you and give up."}}, "Control": {"q": "You're playing a casual game of tennis with a friend who keeps making questionable calls in their own favor. It's subtle, but you're sure they're bending the rules. How do you handle it?", "a": {"C": "You pause and say, \"Hey, let's make a clear call: any ball close to the line is in. Agreed?\"", "O": "You start making your own questionable calls to even the score.", "F": "You say nothing, but keep a mental tally and feel resentful."}}};
+
+const P2A_Q = {Control:"Lock a clean call now or keep options open while you verify?",
+  Pace:"Commit to a stable pace or keep two tempos open while you learn?",
+  Boundary:"Hold the line cleanly or allow with conditions for now?",
+  Truth:"Set a clean rule to act or hold dual reads while moving?",
+  Recognition:"Make a clear case or keep multiple takes open for the room?",
+  Bonding:"Anchor concrete support now or keep options open, light touch?",
+  Stress:"Stabilize and act or probe lightly and keep scanning?"};
+const P3_Q = {Control:"Contrast under pressure. Pick the stronger move for Control.",
+  Pace:"Contrast the rhythm. Pick the stronger move for Pace.",
+  Boundary:"Contrast the line. Pick the stronger move for Boundary.",
+  Truth:"Contrast the call. Pick the stronger move for Truth.",
+  Recognition:"Contrast the proof. Pick the stronger move for Recognition.",
+  Bonding:"Contrast the support. Pick the stronger move for Bonding.",
+  Stress:"Contrast the movement. Pick the stronger move for Stress."};
+
+const AX_LABEL = {C:"Commit cleanly", O:"Keep options open", F:"Pattern break"};
+const AX_SUB = {C:"Stable carry", O:"Flexible stance", F:"Contrast under load"};
+
+
+
+function renderP1(){
+  const fam = FAMILIES[state.p1_ix];
+  const qaArr = P1_QA[fam];
+  const qIx = hashStr(fam) % qaArr.length;
+  const qa = qaArr[qIx];
+  function block(ax){
+    const items = qa.options.filter(o=>o.axis===ax).map(o=>`
+      <div class="card" data-axis="${o.axis}" data-face="${o.face}" data-tell="${o.tell}">
+        <div class="name">${o.text}</div>
+      </div>`).join("");
+    return `<div class="grid3">${items}</div>`;
+  }
+  screen.innerHTML = `
+    <div class="small">Phase 1 • ${fam} • ${state.p1_ix+1}/7</div>
+    <div class="hr"></div>
+    <div style="font-size:14px;color:#c9bba6;margin-bottom:8px">${qa.q}</div>
+    ${block("C")}
+    ${block("O")}
+    ${block("F")}
+  `;
+  screen.querySelectorAll(".card[data-axis]").forEach(el=>{
+    el.onclick = ()=>{
+      const ax = el.getAttribute("data-axis");
+      const face = el.getAttribute("data-face");
+      state.axisP1[fam] = ax;
+      state.faceWinners[fam] = fam + "/" + face;  // store as fam/face for entrants + bracket
+      saveState();
+      if(state.p1_ix<6){ 
+        state.p1_ix++; render(); 
+      } else { 
+        buildEntrantsWithWildcard(); 
+        seedBracket(); 
+        state.phase="P2A"; 
+        state.p2a_ix=0; 
+        state.brStep=0; 
+        saveState(); 
+        render(); 
+      }
+    };
+  });
+}
+
+/* ==== Phase 2A (C/O cards) ==== */
+function renderP2A(){
+  const fam=FAMILIES[state.p2a_ix];
+  const qa=P2A_QA[fam];
+  const card=(ax,text)=>`
+    <div class="card" data-axis="${ax}">
+      <div class="name">${text}</div>
+    </div>`;
+  screen.innerHTML = `
+    <div class="small">Phase 2A • ${fam} • ${state.p2a_ix+1}/7</div>
+    <div class="hr"></div>
+    <div style="font-size:14px;color:#c9bba6;margin-bottom:8px">${qa.q}</div>
+    <div class="grid2">
+      ${card("C", qa.a.C)}
+      ${card("O", qa.a.O)}
+    </div>`;
+  screen.querySelectorAll("[data-axis]").forEach(el=>el.onclick=()=>{
+    state.axisP2[fam]=el.getAttribute("data-axis"); saveState(); state.phase="BR_INT"; saveState(); render();
+  });
+}
+
+/* ==== Wildcard + Seeding ==== */
+function hashStr(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function pickDeterministic(arr,seedStr){ if(!arr.length) return null; const h=hashStr(seedStr); return arr[h%arr.length]; }
+function buildEntrantsWithWildcard(){
+  const winners=FAMILIES.map(f=>state.faceWinners[f]);
+  const tier=["C","O","F"]; let famPick=null;
+  for(const ax of tier){ const c=FAMILIES.filter(f=>state.axisP1[f]===ax); if(c.length){ famPick = pickDeterministic(c, JSON.stringify(state.faceWinners)); break; } }
+  let wildcard=null;
+  if(famPick){
+    const chosen=state.faceWinners[famPick]; const [fam,name]=chosen.split("/");
+    const sib=FACES[fam].find(n=>(fam+"/"+n)!==chosen); wildcard=fam+"/"+sib;
+  } else {
+    const fam=FAMILIES[0]; const chosen=state.faceWinners[fam]; const [ff,nn]=chosen.split("/"); const sib=FACES[ff].find(n=>(ff+"/"+n)!==chosen); wildcard=ff+"/"+sib;
+  }
+  const set=new Set(winners); set.add(wildcard); state.entrants=Array.from(set);
+  if(state.entrants.length<8){
+    for(const fam of FAMILIES){
+      const chosen=state.faceWinners[fam]; const [ff,nn]=chosen.split("/");
+      for(const n of FACES[ff]){ const id=ff+"/"+n; if(!set.has(id)){ set.add(id); state.entrants=Array.from(set); if(state.entrants.length===8) break; } }
+      if(state.entrants.length===8) break;
+    }
+  }
+}
+function seedBracket(){
+  const seedStr=JSON.stringify({winners:state.faceWinners,axes:state.axisP1});
+  let arr=state.entrants.slice();
+  function rng(){ let x=hashStr(seedStr)||123456789; return function(){ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; }
+  const rnd=rng();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  state.bracket[0]=[[arr[0],arr[7]],[arr[3],arr[4]],[arr[2],arr[5]],[arr[1],arr[6]]];
+  state.bracket[1]=[]; state.bracket[2]=[];
+}
+
+/* ==== Interleaved bracket ==== */
+function tellGen(){ const cur={}; return fid=>{ const name=fid.split("/")[1]; const arr=DUEL_TELLS[name]||["—"]; cur[fid]=(cur[fid]||0)%arr.length; const t=arr[cur[fid]]; cur[fid]=(cur[fid]+1)%arr.length; return t; }; }
+const nextTell=tellGen();
+
+function renderBracketInterleaved(){
+  const step=state.brStep;
+  if(step>=4 && state.bracket[1].length===0){
+    const w=state.bracket[0].map(p=>p.winner);
+    if(w.some(v=>!v)){ state.brStep=Math.min(state.brStep,3); return renderBracketInterleaved(); }
+    state.bracket[1]=[[w[0],w[1]],[w[2],w[3]]]; saveState();
+  }
+  if(step>=6 && state.bracket[2].length===0){
+    const w=state.bracket[1].map(p=>p.winner);
+    if(w.some(v=>!v)){ state.brStep=4; return renderBracketInterleaved(); }
+    state.bracket[2]=[[w[0],w[1]]]; saveState();
+  }
+  let label,roundIx,idx;
+  if(step<4){ label="Quarterfinals"; roundIx=0; idx=step; }
+  else if(step<6){ label="Semifinals"; roundIx=1; idx=step-4; }
+  else { label="Final"; roundIx=2; idx=0; }
+  const pair=state.bracket[roundIx][idx];
+  const [A,B]=pair; const L=A.split("/")[1], R=B.split("/")[1];
+  const tellL=nextTell(A), tellR=nextTell(B);
+  screen.innerHTML = `
+    <div class="small">${label} • Match ${idx+1}/${roundIx===0?4:(roundIx===1?2:1)}</div>
+    <div class="hr"></div>
+    <div class="grid2">
+      <div class="card fighter" id="left">
+        <div class="name">${L}</div>
+        <div class="desc">${tellL}</div>
+      </div>
+      <div class="card fighter" id="right">
+        <div class="name">${R}</div>
+        <div class="desc">${tellR}</div>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="small">After this, you’ll return to the next C/O screen.</div>`;
+  document.getElementById("left").onclick=()=>chooseInterleaved(roundIx, idx, A, B);
+  document.getElementById("right").onclick=()=>chooseInterleaved(roundIx, idx, B, A);
+}
+
+function chooseInterleaved(roundIx, idx, winId, loseId){
+  state.bracket[roundIx][idx]={winner:winId, loser:loseId}; state.brStep+=1; saveState();
+  if(roundIx===2){ state.top2=[winId,loseId]; }
+  if(state.p2a_ix<6){ state.p2a_ix+=1; state.phase="P2A"; saveState(); render(); }
+  else { if(roundIx===2){ state.p3_ix=0; state.phase="P3"; saveState(); render(); }
+         else { state.phase="BR_INT"; saveState(); render(); } }
+}
+
+/* ==== Phase 3 ==== */
+function renderP3(){
+  const fam=FAMILIES[state.p3_ix];
+  const p2=state.axisP2[fam]||"C";
+  const pair=(p2==="O")?["C","F"]:["C","O"];
+  const qa=P3_QA[fam];
+  const card=ax=>`
+    <div class="card" data-axis="${ax}">
+      <div class="name">${qa.a[ax]}</div>
+    </div>`;
+  screen.innerHTML = `
+    <div class="small">Phase 3 • ${fam} • ${state.p3_ix+1}/7</div>
+    <div class="hr"></div>
+    <div style="font-size:14px;color:#c9bba6;margin-bottom:8px">${qa.q}</div>
+    <div class="grid2">${card(pair[0])}${card(pair[1])}</div>`;
+  screen.querySelectorAll("[data-axis]").forEach(el=>el.onclick=()=>{
+    state.axisP3[fam]=el.getAttribute("data-axis"); saveState();
+    if(state.p3_ix<6){ state.p3_ix++; render(); } else { state.phase="SUM"; saveState(); render(); }
+  });
+}
+
+/* ==== Verdict & Summary with Restart ==== */
+function composeVerdict(){
+  return FAMILIES.map(f=>{
+    const a1=state.axisP1[f]||"C", a2=state.axisP2[f]||"C", a3=state.axisP3[f]||"C";
+    return (a1==="F"||a2==="F"||a3==="F")?"F":((a1==="O"||a2==="O"||a3==="O")?"O":"C");
+  }).join("");
+}
+function restartQuiz(){
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  // reset state
+  Object.assign(state, {
+    phase:"P0",
+    p0_sel:new Set(),
+    p1_ix:0,
+    axisP1:{},
+    faceWinners:{},
+    p2a_ix:0,
+    axisP2:{},
+    entrants:[],
+    bracket:[[],[],[]],
+    brStep:0,
+    top2:[],
+    p3_ix:0,
+    axisP3:{}
+  });
+  render();
+}
+function renderSummary(){
+  const v=composeVerdict();
+  const [t1,t2]=state.top2.map(id=>id && id.split("/")[1]);
+  const dump = JSON.stringify({p0:Array.from(state.p0_sel), winners:state.faceWinners, entrants:state.entrants, bracket:state.bracket, top2:state.top2, verdict:v}, null, 2)
+                .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  screen.innerHTML = `
+    <div class="small">Summary</div>
+    <div class="hr"></div>
+    <div class="grid2">
+      <div class="card"><div class="axis">TOP‑1</div><div class="name">${t1||"?"}</div></div>
+      <div class="card"><div class="axis">TOP‑2</div><div class="name">${t2||"?"}</div></div>
+    </div>
+    <div class="hr"></div>
+    <div class="card"><div class="axis">VERDICT</div><div class="name" style="letter-spacing:2px">${v}</div><div class="desc">C P B T R Bn S</div></div>
+    <div class="hr"></div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn gold" id="restart">Restart Quiz</button>
+      <button class="btn" id="copy">Copy Result</button>
+    </div>
+    <div class="hr"></div>
+    <pre class="small" style="white-space:pre-wrap">${dump}</pre>`;
+  bar.style.width="100%";
+  document.getElementById("restart").onclick=restartQuiz;
+  document.getElementById("copy").onclick=()=>{
+    const payload = JSON.stringify({top1:t1, top2:t2, verdict:v}, null, 2);
+    navigator.clipboard.writeText(payload).catch(()=>{});
+  };
+}
+
+/* ==== Boot ==== */
+if(loadState()){ render(); } else { render(); }
+</script>
+</body>
+</html>

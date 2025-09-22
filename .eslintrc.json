@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "extends": [
+    "next/core-web-vitals"
+  ],
+  "parserOptions": {
+    "project": [
+      "./apps/web/tsconfig.json"
+    ]
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    ".next/",
+    "coverage/"
+  ]
+}
