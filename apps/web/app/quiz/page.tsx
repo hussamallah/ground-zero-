@@ -405,7 +405,7 @@ function Phase1({state, save}:{state: State; save: (m:(s:State)=>void)=>void}){
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(3, minmax(0, 1fr))', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
-        {qa.options.sort((a, b) => {
+        {[...qa.options].sort((a, b) => {
           // Group by axis: C, O, F
           const order = { 'C': 0, 'O': 1, 'F': 2 };
           return order[a.axis] - order[b.axis];
