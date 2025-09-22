@@ -1,9 +1,6 @@
 
 {
   "version": 2,
-  "builds": [
-    { "src": "package.json", "use": "@vercel/next" }
-  ],
   "framework": "nextjs",
   "regions": ["iad1"],
   "github": { "enabled": true },
